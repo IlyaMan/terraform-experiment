@@ -1,7 +1,7 @@
 provider "google" {
-  project     = "groovy-autumn-377820"
-  region      = "us-central1"
-  zone        = "us-central1-c"
+  project = "groovy-autumn-377820"
+  region  = "us-central1"
+  zone    = "us-central1-c"
 }
 
 resource "google_compute_network" "vpc_network" {
@@ -18,8 +18,8 @@ resource "google_compute_subnetwork" "default" {
 }
 
 module "backend-1" {
-  source   = "./backend-module"
-  name     = "backend-1"
+  source = "./backend-module"
+  name   = "backend-1"
   metadata = {
     web_page_content = "Hello, Group 1!"
   }
@@ -27,8 +27,8 @@ module "backend-1" {
 }
 
 module "backend-2" {
-  source   = "./backend-module"
-  name     = "backend-2"
+  source = "./backend-module"
+  name   = "backend-2"
   metadata = {
     web_page_content = "Hello, Group 2!"
   }
@@ -52,21 +52,21 @@ resource "google_compute_target_http_proxy" "tp" {
 }
 
 resource "google_compute_url_map" "url_map" {
-  name = "http-lb-map"
+  name            = "http-lb-map"
   default_service = module.backend-1.backend_service.id
   host_rule {
     hosts        = ["*"]
     path_matcher = "path_matcher"
   }
   path_matcher {
-    name = "path_matcher"
+    name            = "path_matcher"
     default_service = module.backend-1.backend_service.id
     path_rule {
-      paths = ["/backend-1/*"]
+      paths   = ["/backend-1/*"]
       service = module.backend-1.backend_service.id
     }
     path_rule {
-      paths = ["/backend-2/*"]
+      paths   = ["/backend-2/*"]
       service = module.backend-1.backend_service.id
     }
   }

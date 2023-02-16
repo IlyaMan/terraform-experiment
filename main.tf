@@ -28,9 +28,10 @@ resource "google_compute_instance" "example" {
 
   metadata_startup_script = <<-EOF
   #!/bin/bash
-  export NGINX_MESSAGE='{{ metadata["web_page_content"] }}'
-  envsubst < /tmp/default.conf > /tmp/default.conf.subst
-  mv /tmp/default.conf.subst /etc/nginx/conf.d/default.conf
+  WEB_PAGE_CONTENT=$(curl -H "Metadata-Flavor:Google" "http://metadata/computeMetadata/v1/instance/attributes/web_page_content")
+  export NGINX_MESSAGE="$WEB_PAGE_CONTENT"
+  envsubst < /etc/nginx/default_template.conf > /etc/nginx/default_template.conf.subst
+  sudo mv /etc/nginx/default_template.conf.subst /etc/nginx/conf.d/default.conf
   service nginx restart
 EOF
 }

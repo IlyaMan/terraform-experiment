@@ -20,7 +20,7 @@ build {
         "sudo apt update",
         "sudo apt install -y nginx",
 	"sudo apt install -y git",
-	"sudo cp /tmp/default.conf /etc/nginx/conf.d/default.conf",
+	"sudo cp /tmp/default.conf /etc/nginx/default_template.conf",
         "sudo systemctl start nginx",
         "sudo systemctl enable nginx"
       ]

@@ -14,23 +14,23 @@ resource "google_compute_http_health_check" "nginx" {
 }
 
 resource "google_compute_instance_template" "nginx-instance-template" {
-  name         = "${var.name}-vm"
-  machine_type = "f1-micro"
-  tags         = ["ssh","http-server","https-server"]
+  name           = "${var.name}-vm"
+  machine_type   = "f1-micro"
+  tags           = ["ssh", "http-server", "https-server"]
   can_ip_forward = true
 
 
   disk {
     source_image = "nginx-ubuntu-custom"
-    auto_delete = true
-    boot = true
+    auto_delete  = true
+    boot         = true
   }
 
   network_interface {
     subnetwork = var.network
   }
 
-  metadata =  var.metadata
+  metadata = var.metadata
 
   metadata_startup_script = <<-EOF
   #!/bin/bash
@@ -58,16 +58,16 @@ resource "google_compute_instance_group_manager" "nginx-igm" {
     name              = "primary"
   }
 
-  target_pools       = ["google_compute_target_pool.nginx-pool.id"]
+  target_pools       = [google_compute_target_pool.nginx-pool.id]
   base_instance_name = "autoscaler-sample"
 }
 
 resource "google_compute_autoscaler" "nginx-autoscaler" {
-  name                  = "${var.name}-autoscaler"
-  target                = "google_compute_instance_group_manager.nginx-igm.id"
+  name   = "${var.name}-autoscaler"
+  target = google_compute_instance_group_manager.nginx-igm.id
   autoscaling_policy {
-    min_replicas = 1
-    max_replicas = 3
+    min_replicas    = 1
+    max_replicas    = 3
     cooldown_period = 30
     cpu_utilization {
       target = 0.3 # Set low for testing purposes
@@ -79,7 +79,7 @@ resource "google_compute_backend_service" "backend_service" {
   name = "${var.name}-http-backend"
 
   backend {
-    group = google_compute_instance_group_manager.nginx-igm.self_link
+    group = google_compute_instance_group_manager.nginx-igm.instance_group
   }
 
   health_checks = [
@@ -90,6 +90,6 @@ resource "google_compute_backend_service" "backend_service" {
 }
 
 output "backend_service" {
- value       = google_compute_backend_service.backend_service
- description = "Backend service."
+  value       = google_compute_backend_service.backend_service
+  description = "Backend service."
 }

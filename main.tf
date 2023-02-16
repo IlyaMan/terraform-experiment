@@ -35,7 +35,6 @@ module "backend-2" {
   network = google_compute_subnetwork.default.id
 }
 
-
 resource "google_compute_forwarding_rule" "lb" {
   name                  = "http-lb"
   ip_address            = "ephemeral"

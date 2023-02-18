@@ -38,6 +38,7 @@ resource "google_compute_instance_template" "nginx-instance-template" {
   export NGINX_MESSAGE="$WEB_PAGE_CONTENT"
   envsubst < /etc/nginx/default_template.conf > /etc/nginx/default_template.conf.subst
   sudo mv /etc/nginx/default_template.conf.subst /etc/nginx/conf.d/default.conf
+  sudo rm /etc/nginx/sites-enabled/default
   service nginx restart
 EOF
 }

@@ -1,4 +1,4 @@
-Terraform Config for HTTP Load Balancer with Autoscaler and Packer Config (Experimental)
+#Terraform Config for HTTP Load Balancer with Autoscaler and Packer Config (Experimental)
 
 This Terraform configuration is an experiment that creates an HTTP load balancer on Google Cloud Platform (GCP) that distributes incoming traffic between two backend groups. Each backend group consists of a group of instances that serve Nginx responses to incoming requests. The Nginx responses are configured via metadata in the Terraform configuration.
 

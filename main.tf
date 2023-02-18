@@ -80,7 +80,7 @@ resource "google_compute_url_map" "url_map" {
     }
     path_rule {
       paths   = ["/backend-2/*"]
-      service = module.backend-1.backend_service.id
+      service = module.backend-2.backend_service.id
     }
   }
 }

@@ -35,30 +35,16 @@ module "backend-2" {
   network = google_compute_subnetwork.default.id
 }
 
-resource "google_compute_forwarding_rule" "lb" {
-  name                  = "http-lb"
-  ip_address            = "ephemeral"
-  load_balancing_scheme = "EXTERNAL"
-  port_range            = "80"
 
-  target = google_compute_target_http_proxy.tp.self_link
-}
-
-resource "google_compute_target_http_proxy" "tp" {
-  name = "http-lb-proxy"
-
-  url_map = google_compute_url_map.url_map.self_link
-}
-
-resource "google_compute_url_map" "url_map" {
+resource "google_compute_region_url_map" "url_map" {
   name            = "http-lb-map"
   default_service = module.backend-1.backend_service.id
   host_rule {
     hosts        = ["*"]
-    path_matcher = "path_matcher"
+    path_matcher = "path-matcher"
   }
   path_matcher {
-    name            = "path_matcher"
+    name            = "path-matcher"
     default_service = module.backend-1.backend_service.id
     path_rule {
       paths   = ["/backend-1/*"]
@@ -69,4 +55,18 @@ resource "google_compute_url_map" "url_map" {
       service = module.backend-1.backend_service.id
     }
   }
+}
+
+resource "google_compute_region_target_http_proxy" "tp" {
+  name = "http-lb-proxy"
+
+  url_map = google_compute_region_url_map.url_map.self_link
+}
+
+resource "google_compute_forwarding_rule" "lb" {
+  name                  = "http-lb"
+  load_balancing_scheme = "EXTERNAL"
+  port_range            = "80"
+
+  target = google_compute_region_target_http_proxy.tp.self_link
 }

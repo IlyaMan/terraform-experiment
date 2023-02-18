@@ -5,11 +5,12 @@ variable "metadata" {}
 variable "network" {}
 
 
-resource "google_compute_region_health_check" "nginx-health-check" {
-  name = "${var.name}-nginx-http-health-check"
-  http_health_check {
-    port = 80
-  }
+resource "google_compute_http_health_check" "nginx-health-check" {
+  name               = "${var.name}-nginx-http-health-check"
+  check_interval_sec = 5
+  timeout_sec        = 5
+  request_path       = "/"
+  port               = 80
 }
 
 resource "google_compute_instance_template" "nginx-instance-template" {
@@ -41,15 +42,16 @@ resource "google_compute_instance_template" "nginx-instance-template" {
 EOF
 }
 
+
 resource "google_compute_target_pool" "nginx-pool" {
   name = "${var.name}-pool"
 
   health_checks = [
-    google_compute_region_health_check.nginx-health-check.self_link,
+    google_compute_http_health_check.nginx-health-check.self_link,
   ]
 }
 
-resource "google_compute_region_instance_group_manager" "nginx-igm" {
+resource "google_compute_instance_group_manager" "nginx-igm" {
   name = "${var.name}-igm"
 
   version {
@@ -61,9 +63,17 @@ resource "google_compute_region_instance_group_manager" "nginx-igm" {
   base_instance_name = "autoscaler-sample"
 }
 
-resource "google_compute_region_autoscaler" "nginx-autoscaler" {
+resource "google_compute_instance_group_named_port" "my_port" {
+  group = google_compute_instance_group_manager.nginx-igm.instance_group
+  zone = "us-central1-a"
+
+  name = "http"
+  port = 80
+}
+
+resource "google_compute_autoscaler" "nginx-autoscaler" {
   name   = "${var.name}-autoscaler"
-  target = google_compute_region_instance_group_manager.nginx-igm.id
+  target = google_compute_instance_group_manager.nginx-igm.id
   autoscaling_policy {
     min_replicas    = 1
     max_replicas    = 3
@@ -74,22 +84,22 @@ resource "google_compute_region_autoscaler" "nginx-autoscaler" {
   }
 }
 
-resource "google_compute_region_backend_service" "backend_service" {
+resource "google_compute_backend_service" "backend_service" {
   name                  = "${var.name}-http-backend"
   load_balancing_scheme = "EXTERNAL"
   backend {
-    group = google_compute_region_instance_group_manager.nginx-igm.instance_group
-    balancing_mode  = "UTILIZATION"
+    group          = google_compute_instance_group_manager.nginx-igm.instance_group
+    balancing_mode = "UTILIZATION"
   }
 
   health_checks = [
-    google_compute_region_health_check.nginx-health-check.self_link,
+    google_compute_http_health_check.nginx-health-check.self_link,
   ]
 
   protocol = "HTTP"
 }
 
 output "backend_service" {
-  value       = google_compute_region_backend_service.backend_service
+  value       = google_compute_backend_service.backend_service
   description = "Backend service."
 }
